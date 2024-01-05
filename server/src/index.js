@@ -3,6 +3,7 @@ import mysql from 'mysql2';
 import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import { rateLimit } from 'express-rate-limit'
+import cors from 'cors';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ const limiter = rateLimit({
     legacyHeaders: false,
 });
 
+app.use(cors());
 app.use(bodyParser.json());
 
 con.connect((err) => {
@@ -55,15 +57,22 @@ app.post('/track', limiter, (req, res) => {
     });
 });
 
-app.get('/userCount/:date', (req, res) => {
+app.get('/usercount/:date', (req, res) => {
     const { date } = req.params;
 
-    con.query('SELECT COUNT(DISTINCT userId) as userCount FROM users WHERE date = ?', [date], (err, rsp) => {
+    const sqlQuery = date === "all"
+        ? 'SELECT date, COUNT(userId) as userCount FROM users GROUP BY date'
+        : 'SELECT COUNT(userId) as userCount FROM users WHERE date = ?';
+
+    const queryParameters = date === "all" ? [] : [date];
+
+    con.query(sqlQuery, queryParameters, (err, rsp) => {
         if (err) {
             console.error('Error querying MySQL:', err);
             return res.status(500).json({ error: 'Internal Server Error' });
         }
-        res.json({ rsp: rsp[0].userCount });
+        const userCount = date === "all" ? rsp : rsp[0].userCount;
+        return res.json({ userCount });
     });
 });
 
