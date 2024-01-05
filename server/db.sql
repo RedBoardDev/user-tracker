@@ -1,0 +1,8 @@
+CREATE DATABASE user_tracking;
+USE user_tracking;
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  userId VARCHAR(255) NOT NULL,
+  date DATE NOT NULL
+);
