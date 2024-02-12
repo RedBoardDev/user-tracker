@@ -86,7 +86,7 @@ app.get('/uniqueusercount', async (req, res) => {
         const connection = await pool.getConnection();
         const [rsp] = await connection.query('SELECT date, total_unique_user FROM count_user');
         connection.release();
-        res.json({ total: rsp });
+        res.json({ data: rsp });
     } catch (err) {
         console.error('Error querying MySQL:', err);
         res.status(500).json({ error: 'Internal Server Error' });

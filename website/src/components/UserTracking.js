@@ -3,12 +3,14 @@ import { Box, Paper, Typography } from '@mui/material';
 import ErrorBanner from './ErrorBanner';
 import SimpleLineChart from './SimpleLineChart';
 import config from '../config';
+import SimpleLineChartU from './SimpleLineChartU';
 
 const UserTrackingPage = () => {
     const [apiError, setApiError] = useState(false);
     const [userCount, setUserCount] = useState(null);
     const [averageUsers, setAverageUsers] = useState(null);
     const [totalUsers, setTotalUsers] = useState(0);
+    const [uniqueUserCount, setUniqueUserCount] = useState(null);
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -36,7 +38,30 @@ const UserTrackingPage = () => {
                 setApiError(true);
             }
         };
+
+        const fetchUniqueData = async () => {
+            try {
+                const apiUrl = `${config.apiUrl}/uniqueusercount`;
+                const response = await Promise.race([
+                    fetch(apiUrl),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+                ]);
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                const dataList = data.data;
+                console.log(dataList)
+                setUniqueUserCount(dataList);
+            } catch (error) {
+                console.log(error)
+                setApiError(true);
+            }
+        };
+
         fetchAllData();
+        fetchUniqueData();
     }, []);
 
     const rootStyle = {
@@ -72,6 +97,7 @@ const UserTrackingPage = () => {
                             Average users (Last 30 Days): {averageUsers} users
                         </Typography>
                         <SimpleLineChart data={userCount} />
+                        <SimpleLineChartU data={uniqueUserCount} />
                     </>
                 )}
             </Paper>
