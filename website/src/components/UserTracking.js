@@ -8,9 +8,10 @@ const UserTrackingPage = () => {
     const [apiError, setApiError] = useState(false);
     const [userCount, setUserCount] = useState(null);
     const [averageUsers, setAverageUsers] = useState(null);
+    const [totalUsers, setTotalUsers] = useState(0);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchAllData = async () => {
             try {
                 const apiUrl = `${config.apiUrl}/usercount/all`;
                 const response = await Promise.race([
@@ -22,9 +23,12 @@ const UserTrackingPage = () => {
                     throw new Error('Network response was not ok');
                 }
                 const data = await response.json();
-                setUserCount(data.userCount);
+                setTotalUsers(data.total)
 
-                const last30Days = data.userCount.slice(-30);
+                const dataList = data.data;
+                setUserCount(dataList);
+
+                const last30Days = dataList.slice(-30);
                 const totalUsers = last30Days.reduce((sum, day) => sum + day.userCount, 0);
                 const average = totalUsers / last30Days.length;
                 setAverageUsers(average);
@@ -32,7 +36,7 @@ const UserTrackingPage = () => {
                 setApiError(true);
             }
         };
-        fetchData();
+        fetchAllData();
     }, []);
 
     const rootStyle = {
@@ -62,7 +66,10 @@ const UserTrackingPage = () => {
                 {userCount && (
                     <>
                         <Typography variant="h6" gutterBottom>
-                            Average Users (Last 30 Days): {averageUsers} users
+                            Total users: {totalUsers} users
+                        </Typography>
+                        <Typography variant="h6" gutterBottom>
+                            Average users (Last 30 Days): {averageUsers} users
                         </Typography>
                         <SimpleLineChart data={userCount} />
                     </>
